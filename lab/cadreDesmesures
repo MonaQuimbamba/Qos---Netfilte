@@ -1,0 +1,32 @@
+# pour la surveillance de la TOS avec tcpdump
+$ sudo tcpdump -i r1-eth1 -lnvv '(ip and (ip[1] & 0x02) == 0x02)'
+
+# pour la récupération du TOS avec tcpdump sur les paquets SYN
+$ sudo tcpdump -i r1-eth1 -lnv "tcp[tcpflags] & (tcp-syn) != 0 and src host 192.168.10.1"
+
+# pour l'envoi de paquets marqués avec iperf
+$ iperf -c 192.168.20.1 -p 5002 -u -w10000 -l1472 -b2G -t20 -i.5 --tos 0x10 # en UDP
+$ iperf -c 192.168.20.1 -u -w10000 -l1472 -b500M -t20 -i.5 --tos 0x02 # en TCP
+
+# pour la réception de trafic
+$ iperf -s -u -i 1 -e # en UDP
+$ iperf -s -i 1 -e # en TCP
+
+
+# pour l'interception des paquets TCP dupliqués
+$ tshark -l -i r2-eth0 -Y 'tcp.analysis.duplicate_ack' -f 'tcp and port 5001'
+
+# pour voir les qdisc et la quantité de paquets traités
+$ tc -s -p -d qdisc show dev ifb0
+
+# pour voir les classes et la quantité de paquets traités avec un rafraîchissement d'une fois par seconde
+$ watch -n 1 sudo tc -s -p -d -g class show dev ifb0
+
+# pour supprimer une qdisc
+$ sudo tc qdisc del dev ifb0 root
+
+# pour supprimer la qdisc ingress
+$ sudo tc qdisc del dev r2-eth1 ingress
+
+# pour supprimer un filtre par son numéro de priorité
+$ sudo tc filter del dev ifb0 prio 1

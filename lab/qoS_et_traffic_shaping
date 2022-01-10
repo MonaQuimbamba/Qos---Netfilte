@@ -1,0 +1,8 @@
+tc qdisc add dev r2-eth0 root handle 1: htb default 10
+tc class add dev r2-eth0 parent 1: classid 1:1 htb rate 90mbit burst 9m
+tc class add dev r2-eth0 parent 1:1 classid 1:10 htb rate 40mbit ceil 90mbit burst 9m
+tc class add dev r2-eth0 parent 1:1 classid 1:20 htb rate 20mbit ceil 50mbit burst 2m
+tc class add dev r2-eth0 parent 1:1 classid 1:30 htb rate 10mbit ceil 20mbit burst 1m
+tc filter add dev r2-eth0 parent 1:0 protocol ip prio 1 handle 1 fw flowid 1:10
+tc filter add dev r2-eth0 parent 1:0 protocol ip prio 2 handle 2 fw flowid 1:20
+tc filter add dev r2-eth0 parent 1:0 protocol ip prio 3 handle 3 fw flowid 1:30

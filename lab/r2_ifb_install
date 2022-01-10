@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# chargement du module noyau ifb
+modprobe -r ifb
+# par default il aura deux interface ifb0 et ifb1 donc on demande à avoir une seul interface la ifb0
+modprobe ifb numifbs=1
+# ajouter i'interface ifb0 au manespace r2
+ip link set ifb0 netns r2
+# cela va activer l'interface ifb0 qui est sur r2
+ip netns exec r2 ip link set ifb0 up
+# créer une entrée sur interface externe r2-eth1
+ip netns exec r2 tc qdisc add dev r2-eth1 ingress handle ffff:
+# Transférer tout le trafic entrant dans le routeur r2  vers le module ifb
+ip netns exec r2 tc filter add dev r2-eth1 parent ffff: matchall action mirred egress  redirect dev ifb0
