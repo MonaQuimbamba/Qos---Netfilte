@@ -5,7 +5,6 @@
 
 c'est une pseudo-interface qui agit comme un concentrateur de QoS pour plusieurs sources de trafic différentes. Les paquets en provenance ou à destination d'autres interfaces doivent être redirigés vers elle en utilisant l'action miroir afin d'être traités, le trafic routé régulièrement sera abandonné.
 
- De cette façon, une seule pile de qdiscs, classes et filtres peut être partagée entre plusieurs interfaces
 
  - chargement du module noyau ifb
 
@@ -14,7 +13,7 @@ c'est une pseudo-interface qui agit comme un concentrateur de QoS pour plusieurs
 
  ```modprobe ifb numifbs=1```
 
- - ajouter i'interface ifb0 au manespace r2
+ - ajouter i'interface ifb0 au namespace r2
 
  ```ip link set ifb0 netns r2```
 
@@ -47,50 +46,113 @@ cette commande va gerer la file d'attente en effectuant une chute de la file d'a
 
 Serveur : h2
 
-Clients : h1 ou h3
+Clients : h3
 
 paquets entrant dans r2 :
 
 
-## avec iperf en TCP sans l'application de cette qdisc
-
-la qdisc par default qui est sur r2
-
-![voir](img/qdiscDefault.png "Client tcp sans l'application de la qdisc red")
+## avec iperf sans l'application de cette qdisc
 
 
-Client :
+### TCP
+
+Nous remarquons que la Bande passante bidirectionnelle simultanée est en giga qui implique un débit éléve.
+
+![voir](img/TCPSans.png "Client tcp sans l'application de la qdisc red")
+
+On remarque les segment dupliques <   
+![voir](img/DuplicateTCPSans.png "Client tcp sans l'application de la qdisc red")
+
+### UDP
+Nous remarquons également que nombre de paquets perdus dans cette capture
+![voir](img/UDPSansServer.png "Client tcp sans l'application de la qdisc red")
+
+la statistique de la qdisc sur r2
+![voir](img/Stat.png "Client tcp sans l'application de la qdisc red")
 
 
-![voir](img/ClientTCPSans.png "Client tcp sans l'application de la qdisc red")
+## avec iperf avec l'application de cette qdisc
+
+
+### TCP
+on remaque que la bande passante a reduit dû au fait de l'application de la qdisc  
+![voir](img/TCPAvec.png "Client tcp sans l'application de la qdisc red")
+
+
+### UDP
+
+On remarque qu'il n'y a pas des perdes de paquets
+
+Client UDP           |  Serveur UDP
+:-------------------------:|:-------------------------:
+![](img/ClientUDPAvec.png)  |  ![](img/UDPServerAvec.png)
 
 
 
-
-Serveur :
-
-Reception d'un paquet à chaque 0.5
-![voir](img/ServerTCPSans.png "Serveur tcp sans l'application de la qdisc red")
+Il existe beaucoup plus de paquets duplique avec la qdisc
+![voir](img/DuliTCP.png "Serveur tcp sans l'application de la qdisc red")
 
 
+la statistique de la qdisc sur r2
+![voir](img/statAvec.png "Client tcp sans l'application de la qdisc red")
 
 
-## avec iperf en TCP avec l'application de cette qdisc
+## QoS en ingress et classification par TOS
+
+
+           1: root qdisc
+      /    |   \
+      /    |   \
+      /    |    \
+      1:1  1:2  1:3   classes
+      |    |     |
+      10:  20:   30:    qdiscs qdiscs
+      sfq  tbf   tbf
+
+Le filtre sera appliqué que à la classe 1:1 et 1:3 avec la tos 0x10 et 0x08, les
+paquets par default vont vers la racine .
+
+Voici une stat du nombre de paquets qui ont été traité par les différentes feuilles et par la racine :
+
+![voir](img/statingress.png "Client tcp sans l'application de la qdisc red")
+
+
+On remarque qui cette methode est plus efficace que précédemment  car on peut rediriger le flux de données où on veut et donc on pourrai mieux traiter ar exemple si on a un serveur criquité sur notre réseau on peut rediriger le trafic vers ce serveur sur une classe et ensuite prétraiter les données entrantent
 
 
 
-Client :
+## QoS et « traffic Shaping »
 
 
-![voir](img/ClientTCPAvec.png "Client tcp sans l'application de la qdisc red")
+                 1: root htb
+                 |
+                 |
+                1:1 classe qdisc
+             /    |   \
+          /       |    \
+        1:10    1:20    1:30 classe qdisc htb
+
+
+le filtre ici est applique pour les trois feuilles 1:10 à 1:30, mais la classe qui aura le plus de redirection
+voici la caputre de la stat où on voit qu'une fois que cela passe par  la racine le  noeud 1:1 recoit la plupart du traffic , et ensuite le traffic va vers la feuille 1:10,
+qui a le plus grand débit parmis les trois feuille.
+![voir](img/Qos.png "Client tcp sans l'application de la qdisc red")
 
 
 
+Les régles du firewall :
 
-Serveur :
+pour les classes sont :
 
-Reception d'un paquet à chaque 0.5
-![voir](img/ServerTCPAvec.png "Serveur tcp sans l'application de la qdisc red")
+pour la classe 1 :
+- iptables -A PREROUTING -t mangle -o r2-eth0 -j MARK --set-mark 1
+
+pour la classe 2 :
+- iptables -A PREROUTING -t mangle -o r2-eth0 -j MARK --set-mark 2
+
+pour la classe 3 :
+- iptables -A PREROUTING -t mangle -o r2-eth0 -j MARK --set-mark 3
 
 
-## avec iperf en UDP avec l'application de cette qdisc
+
+## QoS à la demande

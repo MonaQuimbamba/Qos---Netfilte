@@ -5,8 +5,8 @@ $ sudo tcpdump -i r1-eth1 -lnvv '(ip and (ip[1] & 0x02) == 0x02)'
 $ sudo tcpdump -i r1-eth1 -lnv "tcp[tcpflags] & (tcp-syn) != 0 and src host 192.168.10.1"
 
 # pour l'envoi de paquets marqués avec iperf
-$ iperf -c 192.168.20.1 -p 5002 -u -w10000 -l1472 -b2G -t20 -i.5 --tos 0x10 # en UDP
-$ iperf -c 192.168.20.1 -u -w10000 -l1472 -b500M -t20 -i.5 --tos 0x02 # en TCP
+$ iperf -c 192.168.20.1 -p 5001 -u -w10000 -l1472 -b2G -t20 -i.5 --tos 0x10 # en UDP
+$ iperf -c 192.168.20.1 -w10000 -l1472 -b500M -t20 -i.5 --tos 0x02 # en TCP
 
 # pour la réception de trafic
 $ iperf -s -u -i 1 -e # en UDP
@@ -20,7 +20,7 @@ $ tshark -l -i r2-eth0 -Y 'tcp.analysis.duplicate_ack' -f 'tcp and port 5001'
 $ tc -s -p -d qdisc show dev ifb0
 
 # pour voir les classes et la quantité de paquets traités avec un rafraîchissement d'une fois par seconde
-$ watch -n 1 sudo tc -s -p -d -g class show dev ifb0
+$ watch -n 1 sudo tc -s -p -d class show dev ifb0
 
 # pour supprimer une qdisc
 $ sudo tc qdisc del dev ifb0 root
@@ -30,3 +30,12 @@ $ sudo tc qdisc del dev r2-eth1 ingress
 
 # pour supprimer un filtre par son numéro de priorité
 $ sudo tc filter del dev ifb0 prio 1
+
+
+################### les cmds ###############
+$ iperf -s -i 1 -e # en TCP
+$ iperf -c 192.168.20.1 -w10000 -l1472 -b500M -t20 -i.5 # en TCP
+
+
+$ iperf -s -u -i 1 -e # en UDP
+$ iperf -c 192.168.20.1 -p 5001 -u -w10000 -l1472 -b2G -t20 -i.5  # en UDP
