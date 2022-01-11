@@ -69,7 +69,6 @@ Nous remarquons également que nombre de paquets perdus dans cette capture
 ![voir](img/UDPSansServer.png)
 
 la statistique de la qdisc sur r2
-
 ![voir](img/Stat.png)
 
 
