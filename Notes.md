@@ -58,17 +58,19 @@ paquets entrant dans r2 :
 
 Nous remarquons que la Bande passante bidirectionnelle simultanée est en giga qui implique un débit éléve.
 
-![voir](img/TCPSans.png "Client tcp sans l'application de la qdisc red")
+![voir](img/TCPSans.png)
 
 On remarque les segment dupliques <   
-![voir](img/DuplicateTCPSans.png "Client tcp sans l'application de la qdisc red")
+![voir](img/DuplicateTCPSans.png)
 
 ### UDP
 Nous remarquons également que nombre de paquets perdus dans cette capture
-![voir](img/UDPSansServer.png "Client tcp sans l'application de la qdisc red")
+
+![voir](img/UDPSansServer.png)
 
 la statistique de la qdisc sur r2
-![voir](img/Stat.png"Client tcp sans l'application de la qdisc red")
+
+![voir](img/Stat.png)
 
 
 ## avec iperf avec l'application de cette qdisc
