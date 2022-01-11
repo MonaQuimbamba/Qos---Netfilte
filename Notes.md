@@ -140,19 +140,22 @@ qui a le plus grand débit parmis les trois feuille.
 
 
 
-Les régles du firewall :
+Les régles du firewall à appliquer sur r1 :
 
 pour les classes sont :
 
 pour la classe 1 :
-- iptables -A PREROUTING -t mangle -o r2-eth0 -j MARK --set-mark 1
+- iptables -A PREROUTING -t mangle  -j MARK --set-mark 1
 
 pour la classe 2 :
-- iptables -A PREROUTING -t mangle -o r2-eth0 -j MARK --set-mark 2
+- iptables -A PREROUTING -t mangle -j MARK --set-mark 2
 
 pour la classe 3 :
-- iptables -A PREROUTING -t mangle -o r2-eth0 -j MARK --set-mark 3
+- iptables -A PREROUTING -t mangle -j MARK --set-mark 3
 
 
 
 ## QoS à la demande
+
+Résultat du programme python 
+![voir](img/QosDemande.png "Client tcp sans l'application de la qdisc red")
