@@ -39,3 +39,11 @@ $ iperf -c 192.168.20.1 -w10000 -l1472 -b500M -t20 -i.5 # en TCP
 
 $ iperf -s -u -i 1 -e # en UDP
 $ iperf -c 192.168.20.1 -p 5001 -u -w10000 -l1472 -b2G -t20 -i.5  # en UDP
+
+sudo hping3 -c 10 -V --syn --destport 80 --tos 0x03 --ttl 1 192.168.20.1
+
+# lancer
+sudo hping3 -c 3 -V --tos 0x00  192.168.20.1
+
+
+sudo tcpdump -c 1 -ln -i r1-eth0 "ip and (ip[1] & 0x03 == 0x03)"
