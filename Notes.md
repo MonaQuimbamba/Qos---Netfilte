@@ -140,22 +140,38 @@ qui a le plus grand débit parmis les trois feuille.
 
 
 
-Les régles du firewall à appliquer sur r1 :
+Les régles du firewall à appliquer sur r1 pour activer la Qos sur r2 :
 
 pour les classes sont :
 
 pour la classe 1 :
-- iptables -A PREROUTING -t mangle  -j MARK --set-mark 1
+- sudo iptables -A PREROUTING -t mangle -d 192.168.20.1 -j MARK --set-mark 1
 
 pour la classe 2 :
-- iptables -A PREROUTING -t mangle -j MARK --set-mark 2
+- sudo iptables -A PREROUTING -t mangle -d 192.168.20.1 -j MARK --set-mark 2
 
 pour la classe 3 :
-- iptables -A PREROUTING -t mangle -j MARK --set-mark 3
+- sudo iptables -A PREROUTING -t mangle -d 192.168.20.1 -j MARK --set-mark 3
 
+Celles seront appliqué à n'importe quel paquet pour eviter cella, on cree des services
+dans le réseau 1 , afin de repartier la redirection dans des classes diferrentes
+
+donc on a :
+
+pour la classe 1 :
+- sudo iptables -A PREROUTING -t mangle  -p tcp --sport 21 -d 192.168.20.1 -j MARK --set-mark 1
+
+pour la classe 2 :
+- sudo iptables -A PREROUTING -t mangle -p tcp --sport 22   -d 192.168.20.1 -j MARK --set-mark 2
+
+pour la classe 3 :
+- sudo iptables -A PREROUTING -t mangle  -p tcp --sport 80   -d 192.168.20.1 -j MARK --set-mark 3
+
+ Capture des paquets marqué par la reglé :
+  
 
 
 ## QoS à la demande
 
-Résultat du programme python 
+Résultat du programme python
 ![voir](img/QosDemande.png "Client tcp sans l'application de la qdisc red")
