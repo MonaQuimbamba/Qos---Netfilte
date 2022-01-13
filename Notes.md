@@ -146,26 +146,26 @@ Les régles du firewall à appliquer sur r2 pour activer la Qos sur r2 :
 pour les classes sont :
 
 pour la classe 1 :
-- sudo iptables -A PREROUTING -t mangle -s 192.168.20.1 -j MARK --set-mark 1
+- sudo iptables -A PREROUTING -t mangle -p tcp --sport 80 -s 192.168.20.1 -j MARK --set-mark 1
 
 pour la classe 2 :
-- sudo iptables -A PREROUTING -t mangle -s 192.168.20.1 -j MARK --set-mark 2
+- sudo iptables -A PREROUTING -t mangle -p tcp --sport 22 -s 192.168.20.1 -j MARK --set-mark 2
 
 pour la classe 3 :
-- sudo iptables -A PREROUTING -t mangle -s 192.168.20.1 -j MARK --set-mark 3
+- sudo iptables -A PREROUTING -t mangle -s -p tcp --sport 21 192.168.20.1 -j MARK --set-mark 3
 
 
 On lance le serveur sur h2 :
 
 
 ````
-iperf -s
+iperf -s -p 80
 ````
 
 On lance le client sur h1 :
 
 ````
-iperf -c 192.168.20.1
+iperf -c 192.168.20.1 -p 80
 ````
 
 Capture des paquets marqué par la reglé :
@@ -176,3 +176,43 @@ Capture des paquets marqué par la reglé :
 
 Résultat du programme python
 ![voir](img/QosDemande.png "Client tcp sans l'application de la qdisc red")
+
+
+
+
+Pour la realisation de la qos à la demande en mode dynamique , le routeur 1 lance un programme python qui permet de intercepter les paquets venant du réseau 192.168.10.0/24 et puis il applique la  règle de firewall suivante
+
+````
+iptables -A POSTROUTING -t mangle  -j MARK --set-mark 8
+````
+
+qui permet de marquer les paquets apres le routage et un autre programme python éxecuce depuis le host 1 ou 3 permet d'envoyer un paquet quelconque celui qui sera intercepté par le routeur 1 avant d'appliquer la régle.
+
+
+
+Le routeur r2 on refait de la qos en entrant donc on utilise l'interface ifb0 et on implemente les classes comme celles qu'on fait dans la partie ***Qos en ingress et classification par TOS***
+
+
+
+On visualise que le paquet a bien été marque par la commmande  :
+````
+iptables -A POSTROUTING -t mangle -v
+````
+![voir](img/mangle.png)
+
+du côte du routeur r2 on peut visualiser la redirection vers la bonne classe :
+
+````
+watch -n 1 tc -s -d -p class show dev ifb0
+````
+![voir](img/classeIfb0.png)
+
+
+L'execution du programme dans le routeur :
+
+![voir](img/routeur.png)
+
+
+L'execution du programme dans le host :
+
+![voir](img/host.png)
