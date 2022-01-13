@@ -47,3 +47,7 @@ sudo hping3 -c 3 -V --tos 0x00  192.168.20.1
 
 
 sudo tcpdump -c 1 -ln -i r1-eth0 "ip and (ip[1] & 0x03 == 0x03)"
+
+
+
+sudo iptables -L POSTROUTING -t mangle -V

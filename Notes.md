@@ -141,36 +141,36 @@ qui a le plus grand débit parmis les trois feuille.
 
 
 
-Les régles du firewall à appliquer sur r1 pour activer la Qos sur r2 :
+Les régles du firewall à appliquer sur r2 pour activer la Qos sur r2 :
 
 pour les classes sont :
 
 pour la classe 1 :
-- sudo iptables -A PREROUTING -t mangle -d 192.168.20.1 -j MARK --set-mark 1
+- sudo iptables -A PREROUTING -t mangle -s 192.168.20.1 -j MARK --set-mark 1
 
 pour la classe 2 :
-- sudo iptables -A PREROUTING -t mangle -d 192.168.20.1 -j MARK --set-mark 2
+- sudo iptables -A PREROUTING -t mangle -s 192.168.20.1 -j MARK --set-mark 2
 
 pour la classe 3 :
-- sudo iptables -A PREROUTING -t mangle -d 192.168.20.1 -j MARK --set-mark 3
+- sudo iptables -A PREROUTING -t mangle -s 192.168.20.1 -j MARK --set-mark 3
 
-Celles seront appliqué à n'importe quel paquet pour eviter cella, on cree des services
-dans le réseau 1 , afin de repartier la redirection dans des classes diferrentes
 
-donc on a :
+On lance le serveur sur h2 :
 
-pour la classe 1 :
-- sudo iptables -A PREROUTING -t mangle  -p tcp --sport 21 -d 192.168.20.1 -j MARK --set-mark 1
 
-pour la classe 2 :
-- sudo iptables -A PREROUTING -t mangle -p tcp --sport 22   -d 192.168.20.1 -j MARK --set-mark 2
+````
+iperf -s
+````
 
-pour la classe 3 :
-- sudo iptables -A PREROUTING -t mangle  -p tcp --sport 80   -d 192.168.20.1 -j MARK --set-mark 3
+On lance le client sur h1 :
 
- Capture des paquets marqué par la reglé :
-  
+````
+iperf -c 192.168.20.1
+````
 
+Capture des paquets marqué par la reglé :
+
+![voir](img/PaquetsMangle.png "Client tcp sans l'application de la qdisc red")
 
 ## QoS à la demande
 
